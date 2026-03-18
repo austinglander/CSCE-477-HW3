@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OWASP Juice Shop</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #2a2a2a;
+      font-family: Roboto, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    header {
+      width: 100%;
+      background-color: #ee6f00;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+    }
+
+    header h1 {
+      color: #ffffff;
+      font-size: 1.4rem;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+    }
+
+    .container {
+      margin-top: 80px;
+      width: 100%;
+      max-width: 400px;
+      padding: 0 16px;
+    }
+
+    .card {
+      background-color: #ffffff;
+      border-radius: 4px;
+      padding: 32px 28px 28px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .card h2 {
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: #333333;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: #555555;
+      margin-bottom: 6px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cccccc;
+      border-radius: 4px;
+      font-size: 0.95rem;
+      color: #333333;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: #ee6f00;
+    }
+
+    .form-group input.error-input {
+      border-color: #d32f2f;
+    }
+
+    .error-msg {
+      color: #d32f2f;
+      font-size: 0.78rem;
+      margin-top: 4px;
+      min-height: 16px;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 11px;
+      background-color: #ee6f00;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      margin-top: 8px;
+    }
+
+    .btn-login:hover {
+      background-color: #d46200;
+    }
+
+    .btn-login:active {
+      background-color: #b85500;
+    }
+
+    .success-msg {
+      display: none;
+      background-color: #e8f5e9;
+      border: 1px solid #66bb6a;
+      border-radius: 4px;
+      color: #2e7d32;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      margin-top: 16px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🧃 OWASP Juice Shop</h1>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <h2>Login</h2>
+      <form id="loginForm" novalidate>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="Email address"
+            autocomplete="username"
+          />
+          <div class="error-msg" id="emailError"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Password"
+            autocomplete="current-password"
+          />
+          <div class="error-msg" id="passwordError"></div>
+        </div>
+
+        <button type="submit" class="btn-login">Login</button>
+      </form>
+      <div class="success-msg" id="successMsg">Login successful! Welcome to Juice Shop.</div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * Validates the login form.
+     * Rules:
+     *   - Email must not be empty and must contain "@"
+     *   - Password must not be empty and must be at least 8 characters long
+     * @returns {boolean} true if the form is valid, false otherwise
+     */
+    function validateLoginForm(email, password) {
+      var valid = true;
+
+      var emailInput = document.getElementById("email");
+      var emailError = document.getElementById("emailError");
+      var passwordInput = document.getElementById("password");
+      var passwordError = document.getElementById("passwordError");
+
+      // Reset previous error state
+      emailInput.classList.remove("error-input");
+      emailError.textContent = "";
+      passwordInput.classList.remove("error-input");
+      passwordError.textContent = "";
+
+      // Validate email: must not be empty and must contain "@" with characters on both sides
+      if (email === "") {
+        emailError.textContent = "Email field cannot be empty.";
+        emailInput.classList.add("error-input");
+        valid = false;
+      } else if (!email.includes("@") || email.indexOf("@") === 0 || email.indexOf("@") === email.length - 1) {
+        emailError.textContent = "Please enter a valid email address containing \"@\".";
+        emailInput.classList.add("error-input");
+        valid = false;
+      }
+
+      // Validate password
+      if (password === "") {
+        passwordError.textContent = "Password field cannot be empty.";
+        passwordInput.classList.add("error-input");
+        valid = false;
+      } else if (password.length < 8) {
+        passwordError.textContent = "Password must be at least 8 characters long.";
+        passwordInput.classList.add("error-input");
+        valid = false;
+      }
+
+      return valid;
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      // Trim email to handle accidental surrounding whitespace;
+      // password is intentionally not trimmed since spaces may be significant.
+      var email = document.getElementById("email").value.trim();
+      var password = document.getElementById("password").value;
+      var successMsg = document.getElementById("successMsg");
+
+      successMsg.style.display = "none";
+
+      if (validateLoginForm(email, password)) {
+        successMsg.style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>
